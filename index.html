@@ -1,20 +1,140 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title></title>
-        <script src="js/campo-minado.js"></script>
-    </head>
-    <body>
-        <div id="exibir-execucao"></div>
 
-        <script>
-            var campoMinado = new CampoMinado();
-            
-            
-            document.getElementById('exibir-execucao').innerHTML += '----------- Início do jogo -----------';
-            document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
-            
-            // Realize sua codificação a partir deste ponto, boa sorte!
-        </script>
-    </body>
+<head>
+    <title></title>
+    <script src="js/campo-minado.js"></script>
+</head>
+
+<body>
+    <div id="exibir-execucao"></div>
+
+    <script>
+        var campoMinado = new CampoMinado();
+
+
+        document.getElementById('exibir-execucao').innerHTML += '----------- Início do jogo -----------';
+        document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+
+
+        function gerarLinha(pos) {
+            return Math.floor(pos / 9) + 1
+        }
+
+        function gerarColuna(lin, pos) {
+            if (lin == 1) {
+                return pos + 1
+            }
+            else {
+                return pos - (((lin - 1) * 9)) + 1
+            }
+        }
+
+
+        function gerarCampoMinado() {
+
+            let posFechada = new Array,
+                posComMinas = new Array,
+                posSemMinas = new Array;
+
+            let lin, col
+
+            while (campoMinado.JogoStatus() == 0) {
+
+                let tabuleiro = campoMinado.Tabuleiro()
+
+
+                document.getElementById('exibir-execucao').innerHTML += '----------- Status: Jogo em aberto -----------';
+                document.getElementById('exibir-execucao').innerHTML += '<pre>' + tabuleiro + '</pre>';
+
+
+                tabuleiro = tabuleiro.split('\r\n').join('')
+
+                for (var i = 0; i < 81; i++) {
+                    if (i % 9 == 0) {
+                        lin = gerarLinha(i)
+                    }
+
+                    let col = gerarColuna(lin, i)
+
+
+                    if (tabuleiro[i] != 0 && tabuleiro[i] != '-') {
+
+                        if (lin != 1 && col != 1 && tabuleiro[i - 10] == '-') {
+                            posFechada.push(i - 10)
+                        }
+
+                        if (lin != 1 && tabuleiro[i - 9] == '-') {
+                            posFechada.push(i - 9)
+                        }
+
+                        if (lin != 1 && col != 9 && tabuleiro[i - 8] == '-') {
+                            posFechada.push(i - 8)
+                        }
+
+                        if (col != 9 && tabuleiro[i + 1] == '-') {
+                            posFechada.push(i + 1)
+                        }
+                        if (lin != 9 && col != 9 && tabuleiro[i + 10] == '-') {
+                            posFechada.push(i + 10)
+                        }
+                        if (lin != 9 && tabuleiro[i + 9] == '-') {
+                            posFechada.push(i + 9)
+                        }
+                        if (lin != 9 && col != 1 && tabuleiro[i + 8] == '-') {
+                            posFechada.push(i + 8)
+                        }
+                        if (col != 1 && tabuleiro[i - 1] == '-') {
+                            posFechada.push(i - 1)
+                        }
+
+                        if (posFechada.length == tabuleiro[i]) {
+                            posFechada.forEach(pos => {
+                                if (posComMinas.indexOf(pos) == -1) {
+                                    let linMina = gerarLinha(pos)
+                                    let colMina = gerarColuna(linMina, pos)
+                                    document.getElementById('exibir-execucao').innerHTML += '<pre>Bomba encontrada: linha(' + linMina + ') / coluna(' + colMina + ')</pre>'
+
+                                    posComMinas.push(pos)
+                                }
+                            })
+                        }
+                        if (posFechada.length > tabuleiro[i]) {
+                            posSemMinas = posFechada.filter(x => !posComMinas.includes(x))
+
+                            if ((posFechada.length - tabuleiro[i]) == posSemMinas.length) {
+                                posSemMinas.forEach(pos => {
+                                    let linAbrir = gerarLinha(pos)
+                                    let colAbrir = gerarColuna(linAbrir, pos)
+                                    campoMinado.Abrir(linAbrir, colAbrir)
+
+                                    document.getElementById('exibir-execucao').innerHTML += '<pre>Abrindo casa: linha(' + linAbrir + ') / coluna(' + colAbrir + ')</pre>';
+                                })
+                                posFechada = []
+                                break;
+                            }
+                        }
+
+                        posFechada = []
+
+                    }
+
+                }
+            }
+
+            if (campoMinado.JogoStatus() == 1) {
+                document.getElementById('exibir-execucao').innerHTML += '----------- Status: Vitória -----------';
+            } else {
+                document.getElementById('exibir-execucao').innerHTML += '----------- Status: Game Over -----------';
+            }
+
+        }
+
+
+        gerarCampoMinado();
+
+        document.getElementById('exibir-execucao').innerHTML += '<pre>' + campoMinado.Tabuleiro() + '</pre>';
+    </script>
+</body>
+
 </html>
